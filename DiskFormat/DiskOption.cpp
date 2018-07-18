@@ -553,9 +553,9 @@ BOOL GetAllDrive(char * letterList, DWORD * count)
 
 	*count = i;
 
-	CString str;
-	str.Format(L"%c %c %c %c %c %c", letterList[0], letterList[1], letterList[2], letterList[3], letterList[4], letterList[5]);
-	MessageBox(NULL, str, L"notice", MB_OK);
+// 	CString str;
+// 	str.Format(L"%c %c %c %c %c %c", letterList[0], letterList[1], letterList[2], letterList[3], letterList[4], letterList[5]);
+// 	MessageBox(NULL, str, L"notice", MB_OK);
 	return TRUE;
 }
 
@@ -856,16 +856,26 @@ BOOL HaveReserveSectors(DWORD physicalDriveNumber)
 
 //	MessageBoxA(NULL, str, "111", MB_OK);
 
-	if (strncmp(str, "NTFS", 4) == 0)
+	if (buffer[510] == 0x55 && buffer[511] == 0xAA)
 	{
+		if (strncmp(str, "NTFS", 4) == 0 && buffer[510] == 0x55 && buffer[511] == 0xAA)
+		{
+			CloseHandle(hDrive);
+			return FALSE;
+		}
+		else if (strncmp(str, "MSDOS5.0", 8) == 0 && buffer[510] == 0x55 && buffer[511] == 0xAA)
+		{
+			CloseHandle(hDrive);
+			return FALSE;
+		}
+		CloseHandle(hDrive);
+		return TRUE;
+	}
+	else
+	{
+		//如果不是的话，说明被加密
 		CloseHandle(hDrive);
 		return FALSE;
 	}
-	else if (strncmp(str, "MSDOS5.0", 8) == 0)
-	{
-		CloseHandle(hDrive);
-		return FALSE;
-	}
-	CloseHandle(hDrive);
-	return TRUE;
+
 }
